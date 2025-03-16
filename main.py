@@ -167,7 +167,7 @@ def server():
             if not request.args.get("wait", default=False):
                 print(f"Key not found, key: {key}")
                 return redirect(url_for("entry"))
-            if (datetime.now() - start).total_seconds() > os.environ.get("SLOPES_CACHE_DELAY", 5):
+            if (datetime.now() - start).total_seconds() > int(os.environ.get("SLOPES_CACHE_DELAY", 5)):
                 print(f"Wait for key failed, key: {key}")
                 return redirect(url_for("entry"))
         print(f"Serving for key: {key}")
@@ -185,6 +185,6 @@ def server():
 
 if __name__ == "__main__":
     # local()
-    server().run(debug=True)
+    server().run(port=8000, debug=True)
 else:
     app = server()

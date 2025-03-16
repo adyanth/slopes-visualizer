@@ -36,7 +36,10 @@
                     "name": "gpx",
                     "accept": [
                         "text/xml",
-                        ".gpx"
+                        "application/gpx",
+                        "application/gpx+xml",
+                        ".gpx",
+                        "application/octet-stream"
                     ]
                 }
             ]

@@ -140,6 +140,7 @@ def server():
     from flask import Flask, request, render_template, redirect, url_for, send_file
     from flask_caching import Cache
     import hashlib
+    from datetime import datetime
 
     app = Flask(__name__)
     cache = Cache(app, config={"CACHE_TYPE": "SimpleCache"})
@@ -153,15 +154,22 @@ def server():
         gpx_xml = gpx_file.read()
         key = hashlib.sha256(gpx_xml).hexdigest()
         if not cache.has(key):
-            print("Generating Map")
+            print(f"Generating map for key: {key}")
             html = process_gpx(gpx_xml)
             cache.add(key, html)
-        return redirect(url_for("processed", key=key))
+        return redirect(url_for("processed", key=key, wait=True))
 
     @app.route("/processed/<key>", methods=["GET"])
     def processed(key: str):
-        if not cache.has(key):
-            return redirect(url_for("entry"))
+        start = datetime.now()
+        while not cache.has(key):
+            if not request.args.get("wait", default=False):
+                print(f"Key not found, key: {key}")
+                return redirect(url_for("entry"))
+            if (datetime.now() - start).total_seconds() > 1:
+                print(f"Wait for key failed, key: {key}")
+                return redirect(url_for("entry"))
+        print(f"Serving for key: {key}")
         return cache.get(key)
 
     @app.route('/manifest.json')
@@ -172,8 +180,10 @@ def server():
     def serve_sw():
         return send_file('sw.js', mimetype='application/javascript')
 
-    app.run(debug=False)
+    return app
 
 if __name__ == "__main__":
     # local()
-    server()
+    server().run(debug=True)
+else:
+    app = server()

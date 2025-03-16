@@ -125,11 +125,47 @@ def create_folium_map(g: gpxpy.gpx.GPX) -> folium.Map:
 def generate_html(m: folium.Map):
     return m.get_root().render()
 
-if __name__ == "__main__":
+def process_gpx(gpx_xml: str):
+    g = gpxpy.parse(gpx_xml)
+    m = create_folium_map(g)
+    return generate_html(m)
+
+def local(filename: str):
     gpx_xml = ""
     with open("sample.gpx") as f:
         gpx_xml = f.read()
-    g = gpxpy.parse(gpx_xml)
-    m = create_folium_map(g)
-    html = generate_html(m)
-    print(html)
+    print(process_gpx(gpx_xml))
+
+def server():
+    from flask import Flask, request, render_template, redirect, url_for
+    from flask_caching import Cache
+    import hashlib
+
+    app = Flask(__name__)
+    cache = Cache(app, config={"CACHE_TYPE": "SimpleCache"})
+
+    @app.route("/", methods=["GET", "POST"])
+    def entry():
+        if request.method == "GET":
+            return render_template("index.html")
+
+        gpx_file = request.files["gpx"]
+        gpx_xml = gpx_file.read()
+        key = hashlib.sha256(gpx_xml).hexdigest()
+        if not cache.has(key):
+            print("Generating Map")
+            html = process_gpx(gpx_xml)
+            cache.add(key, html)
+        return redirect(url_for("processed", key=key))
+
+    @app.route("/processed/<key>", methods=["GET"])
+    def processed(key: str):
+        if not cache.has(key):
+            return redirect(url_for("entry"))
+        return cache.get(key)
+
+    app.run(debug=False)
+
+if __name__ == "__main__":
+    # local()
+    server()

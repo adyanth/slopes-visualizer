@@ -137,7 +137,7 @@ def local(filename: str):
     print(process_gpx(gpx_xml))
 
 def server():
-    from flask import Flask, request, render_template, redirect, url_for
+    from flask import Flask, request, render_template, redirect, url_for, send_file
     from flask_caching import Cache
     import hashlib
 
@@ -163,6 +163,14 @@ def server():
         if not cache.has(key):
             return redirect(url_for("entry"))
         return cache.get(key)
+
+    @app.route('/manifest.json')
+    def serve_manifest():
+        return send_file('manifest.json', mimetype='application/manifest+json')
+
+    @app.route('/sw.js')
+    def serve_sw():
+        return send_file('sw.js', mimetype='application/javascript')
 
     app.run(debug=False)
 

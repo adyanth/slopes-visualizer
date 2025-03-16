@@ -84,7 +84,6 @@ def create_folium_map(g: gpxpy.gpx.GPX) -> folium.Map:
         geojson_data,
         pointToLayer=folium.utilities.JsCode("""
             function (geoJsonPoint, latlng) {
-                console.log(geoJsonPoint, latlng);
                 let azimuth = geoJsonPoint.properties.azimuth;
                 var corrected_icon_azimuth = 334; // To make the icon horizontal
                 corrected_icon_azimuth += -90; // To make the icon point north
@@ -96,8 +95,9 @@ def create_folium_map(g: gpxpy.gpx.GPX) -> folium.Map:
                         icon: "person-skiing",
                         extraClasses: `fa-rotate-${corrected_icon_azimuth}`
                     }),
-                    title: geoJsonPoint.properties.text,
                     alt: "Skiier",
+                }).bindTooltip(geoJsonPoint.properties.text, {
+                    permanent: true,
                 });
             }
         """)

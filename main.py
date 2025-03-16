@@ -39,7 +39,7 @@ def create_folium_map(g: gpxpy.gpx.GPX) -> folium.Map:
             tooltip=f"Starting Elevation: {ele.maximum}m",
         ).add_to(fg)
         max_speed = point_speed(max(ski.points, key=point_speed))
-        text = f"Ending Elevation: {ele.minimum:.2f}m\n Drop: {ele.maximum - ele.minimum:.2f}m\nDuration: {ski.get_duration() / 60:.2f}min\nMax Speed: {max_speed:.2f}kmph"
+        text = f"Ending Elevation: {ele.minimum:.2f}m\n Drop: {ele.maximum - ele.minimum:.2f}m\nDuration: {ski.get_duration() / 60:.2f}min\nMax Speed: {max_speed:.2f}mph"
         folium.CircleMarker(
             location=(end.latitude,end.longitude),
             color="red",
@@ -49,7 +49,7 @@ def create_folium_map(g: gpxpy.gpx.GPX) -> folium.Map:
             coords = map(lambda x: (x.latitude, x.longitude),  lift.points)
             folium.PolyLine(coords, tooltip="Lift", color="black", **poly_line_style).add_to(fg)
         coords = map(lambda x: (x.latitude, x.longitude),  ski.points)
-        text = f"Max Speed: {max_speed:.2f}kmph"
+        text = f"Max Speed: {max_speed:.2f}mph"
         folium.PolyLine(coords, tooltip="Ski", popup=text, color="red", **poly_line_style).add_to(fg)
 
     geojson_datapoints = [pt for seg in track.segments for pt in seg.points]
@@ -61,7 +61,7 @@ def create_folium_map(g: gpxpy.gpx.GPX) -> folium.Map:
                     "elevation": pt.elevation,
                     "speed": point_speed(pt),
                     "azimuth": float(pt.extensions[0].attrib["azimuth"]),
-                    "text": f"Elevation: {pt.elevation:.2f}m\nSpeed: {point_speed(pt):.2f}kmph",
+                    "text": f"Elevation: {pt.elevation:.2f}m\nSpeed: {point_speed(pt):.2f}mph",
                     "start": str(pt.time),
                     "end": str(
                         geojson_datapoints[i+1].time

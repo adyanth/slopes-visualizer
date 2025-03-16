@@ -137,10 +137,11 @@ def local(filename: str):
     print(process_gpx(gpx_xml))
 
 def server():
+    from datetime import datetime
     from flask import Flask, request, render_template, redirect, url_for, send_file
     from flask_caching import Cache
     import hashlib
-    from datetime import datetime
+    import os
 
     app = Flask(__name__)
     cache = Cache(app, config={"CACHE_TYPE": "SimpleCache"})
@@ -166,7 +167,7 @@ def server():
             if not request.args.get("wait", default=False):
                 print(f"Key not found, key: {key}")
                 return redirect(url_for("entry"))
-            if (datetime.now() - start).total_seconds() > 1:
+            if (datetime.now() - start).total_seconds() > os.environ.get("SLOPES_CACHE_DELAY", 5):
                 print(f"Wait for key failed, key: {key}")
                 return redirect(url_for("entry"))
         print(f"Serving for key: {key}")
